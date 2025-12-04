@@ -1,0 +1,14 @@
+ #VPN Fortclient
+Teiko
+Senha: FsxORwo4A
+Banco: bancoaprov
+
+#Porta SSH 9875 - Acesso via VPN - Conectar via usuario TEIKO e rodar "su - " para autenticar com o root.
+#conexão Putty
+IP: 200.135.232.1:9875
+Login: teiko
+senha: FsxORwo4A
+
+ #depois da um "su -" 
+senha do root: caW1R3t6wJv302Brcpz5
+
