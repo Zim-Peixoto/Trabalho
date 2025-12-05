@@ -1,0 +1,72 @@
+     #Conferir nomes das instancias:
+ps -ef | grep pmon
+ps xa | grep pmon
+
+########################################################################################################
+
+     ##Carregar variáveis e ver retenção dos backups:
+              #Checar retenção no RMAN
+
+export ORACLE_SID=<INSTANCIA>
+rman target /
+RMAN> SHOW ALL;
+
+Procura sempre a linha:
+CONFIGURE RETENTION POLICY TO ...
+
+#########################################################################################################
+
+     #Consultar o tamanho do banco de dados:
+
+set serveroutput on
+declare
+dbf number;  
+tmpdbf number;  
+lgf number;
+ctl number;
+soma number;
+begin
+   select trunc(sum(bytes/1024/1024),2) into dbf from v$datafile;
+   select trunc(sum(bytes/1024/1024),2) into tmpdbf from v$tempfile;
+   select trunc(sum(bytes/1024/1024),2) into lgf from v$log l, v$logfile lf where l.group# = lf.group#;
+   select trunc(sum(block_size*file_size_blks/1024/1024),2) into ctl from v$controlfile;
+   select trunc((dbf+tmpdbf+lgf+ctl)/1024,2) into soma from dual;
+DBMS_OUTPUT.PUT_LINE(chr(10));
+DBMS_OUTPUT.PUT_LINE('Datafiles: '|| dbf ||' MB');
+DBMS_OUTPUT.PUT_LINE(chr(0));
+DBMS_OUTPUT.PUT_LINE('Tempfiles: '|| tmpdbf ||' MB');
+DBMS_OUTPUT.PUT_LINE(chr(0));
+DBMS_OUTPUT.PUT_LINE('Logfiles: '|| lgf ||' MB');
+DBMS_OUTPUT.PUT_LINE(chr(0));
+DBMS_OUTPUT.PUT_LINE('Controlfiles: '|| ctl ||' MB');
+DBMS_OUTPUT.PUT_LINE(chr(0));
+DBMS_OUTPUT.PUT_LINE('Total Tamanho: '|| soma ||' GB');
+end;
+/
+
+ ########################################################################################################
+
+
+                                  #Serviços
+
+
+1. Criação de Ambiente Standby (Produto Flowti)
+Objetivo: Garantir alta disponibilidade e continuidade do serviço do Banco de Dados em caso de falhas no ambiente principal.
+Benefícios: Permite recuperação rápida em incidentes críticos e garante atualização periódica do ambiente via aplicação de Archives.
+Necessário: Nenhum licenciamento adicional, necessário apenas um servidor com as mesmas especificações do ambiente PRD(Disco, RAM, etc..).
+2. Habilitar Backup Datapump (para restores parciais)
+Objetivo: Possibilitar restauração de objetos específicos (schemas, tabelas ou procedures) sem necessidade de restaurar o banco completo.
+Benefícios: Reduz o tempo de recuperação e de indisponibilidade em incidentes lógicos.
+Necessário: Apenas espaço em disco. (O DBA responsável pelo checklist deve realizar uma estimativa prévia de espaço para validar a viabilidade de implementação e informar junto a recomendação.)
+3. Habilitar Backup em Cloud
+Objetivo: Garantir redundância externa dos backups físicos, protegendo o ambiente em casos de falhas locais.
+Benefícios: Aumenta a segurança dos dados e possibilita recuperação mesmo em desastres físicos.
+Necessário: Contratação de Bucket ou Acronis junto à Flowti. Informar ao cliente que caso tenha interesse uma oportunidade comercial será aberta.
+4. Implementar Cópia Remota dos Backups 
+Objetivo: Manter redundância dos backups em um destino remoto.
+Benefícios: Melhora a segurança contra perda total de dados e amplia a resiliência do ambiente.
+Necessário: Apenas a disponibilização de um destino remoto por parte do cliente (servidor, NAS, storage, etc.).
+5. Avaliar Upgrade de Versão do Banco de Dados
+Objetivo: Atualizar para uma versão Oracle mais recente, com suporte ativo e melhorias de performance e segurança.
+Benefícios: Garante suporte Oracle, novos recursos e correções de vulnerabilidades.
+Necessário: Caso o cliente demonstre interesse, podemos abrir uma oportunidade comercial interna para elaboração de proposta de upgrade.
